@@ -1,1 +1,9 @@
-
+pandas
+requests
+prophet
+scikit-learn
+matplotlib
+seaborn
+streamlit
+plotly
+openpyxl
