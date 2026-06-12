@@ -206,7 +206,8 @@ def build_risk_scores():
     # -- Priority score (for sorting in dashboard) ----------------------------
     # Combines traffic light + trend to give a single urgency number
     # RED=3, AMBER=2, GREEN=1, then worsening trend adds 0.5
-    risk["PriorityScore"] = risk["RiskRating"].map({"RED": 3, "AMBER": 2, "GREEN": 1})
+    risk["PriorityScore"] = risk["RiskRating"].map({"RED": 3.0, "AMBER": 2.0, "GREEN": 1.0})
+    risk["PriorityScore"] = risk["PriorityScore"].astype(float)
     risk.loc[risk["TrendDirection"] == "Worsening", "PriorityScore"] += 0.5
     risk.loc[risk["TrendDirection"] == "Improving",  "PriorityScore"] -= 0.3
     risk["PriorityScore"] = risk["PriorityScore"].round(2)
