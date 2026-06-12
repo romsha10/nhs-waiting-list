@@ -242,7 +242,7 @@ if page == "National Overview":
                     x=pd.concat([sub_fc["ForecastDate"], sub_fc["ForecastDate"][::-1]]),
                     y=pd.concat([sub_fc["yhat_upper"], sub_fc["yhat_lower"][::-1]]),
                     fill="toself",
-                    fillcolor=colour.replace(")", ",0.1)").replace("rgb", "rgba") if "rgb" in colour else colour + "22",
+                    fillcolor="rgba(38,70,83,0.12)" if pt == "New Outpatient" else "rgba(231,111,81,0.12)",
                     line=dict(color="rgba(0,0,0,0)"),
                     showlegend=False, name="Confidence",
                 ))
