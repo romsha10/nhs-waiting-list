@@ -1,9 +1,4 @@
-# src/risk_engine.py
-# -----------------------------------------------------------------------------
-# PURPOSE: Apply traffic light risk classification to every forecasted
-#          department combination and produce a single risk scores CSV
-#          that the Streamlit app and Power BI dashboard will consume.
-#
+# PURPOSE: Apply traffic light risk classification to every forecasted department combination and produce a single risk scores CSV that the Streamlit app and Power BI dashboard will consume.
 # TRAFFIC LIGHT LOGIC:
 #   We look at the PEAK forecasted PctOver12Weeks across the 6-month horizon.
 #
@@ -21,7 +16,6 @@
 #
 # OUTPUT:
 #   data/processed/risk_scores.csv -- one row per department, final risk label
-# -----------------------------------------------------------------------------
 
 import pandas as pd
 import numpy as np
@@ -33,9 +27,7 @@ PROCESSED_DIR = "data/processed"
 GREEN_MAX  = 20.0   # below this = GREEN
 AMBER_MAX  = 50.0   # below this = AMBER, above = RED
 
-# -----------------------------------------------------------------------------
 # Load data
-# -----------------------------------------------------------------------------
 
 def load_inputs():
     forecasts = pd.read_csv(
@@ -52,10 +44,7 @@ def load_inputs():
     )
     return forecasts, ongoing, additions
 
-# -----------------------------------------------------------------------------
 # Signal 1: Traffic light from peak forecast
-# -----------------------------------------------------------------------------
-
 def apply_traffic_light(peak_pct: float) -> str:
     if peak_pct >= AMBER_MAX:
         return "RED"
@@ -64,10 +53,7 @@ def apply_traffic_light(peak_pct: float) -> str:
     else:
         return "GREEN"
 
-# -----------------------------------------------------------------------------
 # Signal 2: Trend direction over last 6 months of actual data
-# -----------------------------------------------------------------------------
-
 def compute_trend(ongoing: pd.DataFrame) -> pd.DataFrame:
     """
     For each department, fit a simple linear slope to the last 6 months
@@ -111,10 +97,7 @@ def compute_trend(ongoing: pd.DataFrame) -> pd.DataFrame:
 
     return pd.DataFrame(results)
 
-# -----------------------------------------------------------------------------
 # Signal 3: Current actual breach % (latest available data point)
-# -----------------------------------------------------------------------------
-
 def get_current_breach(ongoing: pd.DataFrame) -> pd.DataFrame:
     latest_date = ongoing["Date"].max()
     latest = ongoing[ongoing["Date"] == latest_date].copy()
@@ -128,34 +111,28 @@ def get_current_breach(ongoing: pd.DataFrame) -> pd.DataFrame:
         "90thPercentile": "Current90thPctWaitWeeks",
     })
 
-# -----------------------------------------------------------------------------
 # Signal 4: Net pressure from additions/removals (latest quarter)
-# -----------------------------------------------------------------------------
-
 def get_pressure(additions: pd.DataFrame) -> pd.DataFrame:
     latest_q = additions["Date"].max()
     latest = additions[additions["Date"] == latest_q].copy()
     return latest[["HBT", "Specialty", "PatientType",
                    "Additions", "Removals", "NetPressure"]]
 
-# -----------------------------------------------------------------------------
 # Main: combine all signals into one risk score table
-# -----------------------------------------------------------------------------
-
 def build_risk_scores():
-    print("\n-- Phase 4: Risk Engine ------------------------------------------------\n")
+    print("\n Phase 4: Risk Engine \n")
 
-    print("  Loading forecasts and clean data...")
+    print("Loading forecasts and clean data")
     forecasts, ongoing, additions = load_inputs()
 
-    # -- Forecast summary per department: peak, mean, final forecast value ----
-    print("  Computing forecast summary per department...")
+    # Forecast summary per department: peak, mean, final forecast value
+    print("Computing forecast summary per department")
     forecast_summary = (
         forecasts.groupby(["HBT", "HealthBoardName", "Specialty", "SpecialtyName", "PatientType"])
         .agg(
-            PeakForecast        =("yhat", "max"),
-            MeanForecast        =("yhat", "mean"),
-            FinalForecast       =("yhat", "last"),
+            PeakForecast =("yhat", "max"),
+            MeanForecast =("yhat", "mean"),
+            FinalForecast =("yhat", "last"),
             ForecastUncertainty =("yhat_upper", lambda x: (
                 forecasts.loc[x.index, "yhat_upper"] -
                 forecasts.loc[x.index, "yhat_lower"]
@@ -169,7 +146,7 @@ def build_risk_scores():
     forecast_summary["MeanForecast"]  = forecast_summary["MeanForecast"].round(2)
     forecast_summary["FinalForecast"] = forecast_summary["FinalForecast"].round(2)
 
-    # -- Apply traffic light --------------------------------------------------
+    # Apply traffic light
     forecast_summary["RiskRating"] = forecast_summary["PeakForecast"].apply(apply_traffic_light)
 
     counts = forecast_summary["RiskRating"].value_counts()
@@ -177,17 +154,17 @@ def build_risk_scores():
     print(f"  AMBER  (at risk)       : {counts.get('AMBER', 0):>4} departments")
     print(f"  RED    (breach likely) : {counts.get('RED',   0):>4} departments")
 
-    # -- Trend signal ---------------------------------------------------------
+    # Trend signal
     print("\n  Computing trend direction (last 6 months)...")
     trends = compute_trend(ongoing)
 
-    # -- Current breach state -------------------------------------------------
+    # Current breach state
     current = get_current_breach(ongoing)
 
-    # -- Pressure signal ------------------------------------------------------
+    # Pressure signal
     pressure = get_pressure(additions)
 
-    # -- Merge everything together --------------------------------------------
+    # Merge everything together
     print("  Merging all signals...")
 
     risk = forecast_summary.merge(
@@ -203,7 +180,7 @@ def build_risk_scores():
         how="left"
     )
 
-    # -- Priority score (for sorting in dashboard) ----------------------------
+    # Priority score (for sorting in dashboard)
     # Combines traffic light + trend to give a single urgency number
     # RED=3, AMBER=2, GREEN=1, then worsening trend adds 0.5
     risk["PriorityScore"] = risk["RiskRating"].map({"RED": 3.0, "AMBER": 2.0, "GREEN": 1.0})
@@ -212,7 +189,7 @@ def build_risk_scores():
     risk.loc[risk["TrendDirection"] == "Improving",  "PriorityScore"] -= 0.3
     risk["PriorityScore"] = risk["PriorityScore"].round(2)
 
-    # -- Final column order ---------------------------------------------------
+    # Final column order
     col_order = [
         "HBT", "HealthBoardName", "Specialty", "SpecialtyName", "PatientType",
         "RiskRating", "PriorityScore",
@@ -228,14 +205,14 @@ def build_risk_scores():
     risk = risk[col_order].sort_values("PriorityScore", ascending=False)
     risk = risk.reset_index(drop=True)
 
-    # -- Save -----------------------------------------------------------------
+    # Save
     out_path = f"{PROCESSED_DIR}/risk_scores.csv"
     risk.to_csv(out_path, index=False)
 
-    print(f"\n-- Saved: {out_path}  ({len(risk):,} rows)")
+    print(f"\n Saved: {out_path}  ({len(risk):,} rows)")
 
-    # -- Preview top RED + worsening departments ------------------------------
-    print("\n-- Highest Priority Departments (RED + Worsening trend) ------------\n")
+    # Preview top RED + worsening departments
+    print("\n Highest Priority Departments (RED + Worsening trend)\n")
     top = risk[risk["RiskRating"] == "RED"].sort_values("PriorityScore", ascending=False).head(10)
 
     for _, row in top.iterrows():
@@ -244,16 +221,14 @@ def build_risk_scores():
         current_val = row.get("CurrentPctOver12Weeks", float("nan"))
         peak_val    = row.get("PeakForecast", float("nan"))
         print(f"  [RED] {trend_arrow}  Current: {current_val:5.1f}%  ->  Peak forecast: {peak_val:5.1f}%")
-        print(f"        {row['HealthBoardName']} | {row['SpecialtyName']} | {row['PatientType']}")
-        print(f"        Trend slope: {row.get('TrendSlope', 0):+.2f} pp/month   "
+        print(f"  {row['HealthBoardName']} | {row['SpecialtyName']} | {row['PatientType']}")
+        print(f"  Trend slope: {row.get('TrendSlope', 0):+.2f} pp/month   "
               f"Net pressure: {row.get('NetPressure', 'N/A')}")
         print()
 
-    print("-- Phase 4 Complete ----------------------------------------------------")
-    print("Next: build streamlit_app/app.py (Phase 5)\n")
+    print("Phase 4 Complete")
 
     return risk
-
 
 if __name__ == "__main__":
     build_risk_scores()
