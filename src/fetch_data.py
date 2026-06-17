@@ -1,13 +1,4 @@
-# src/fetch_data.py
-# ─────────────────────────────────────────────────────────────────────────────
-# PURPOSE: Download NHS Scotland Stage of Treatment Waiting Times data
-#          directly from opendata.nhs.scot using direct CSV download URLs.
-#
-# APPROACH CHANGE: Instead of the CKAN package API (which 404'd because NHS
-# Scotland renamed their datasets), we now use direct CSV download links.
-# These are the real, verified resource IDs scraped from the live NHS page.
-# Data goes back to October 2012 — plenty for time series forecasting.
-# ─────────────────────────────────────────────────────────────────────────────
+# PURPOSE: Download NHS Scotland Stage of Treatment Waiting Times data directly from opendata.nhs.scot using direct CSV download URLs.
 
 import requests
 import pandas as pd
@@ -15,33 +6,29 @@ import os
 
 RAW_DATA_DIR = "data/raw"
 
-# ── Real verified resource IDs from opendata.nhs.scot ────────────────────────
-# Package: stage-of-treatment-waiting-times
-# Package UUID: e9dbef36-a343-4b9a-ab7e-b6e6cbcbb38e
-# These were confirmed live on the NHS Scotland Open Data portal June 2026
-
+# Real verified resource IDs from opendata.nhs.scot
 PACKAGE_UUID = "e9dbef36-a343-4b9a-ab7e-b6e6cbcbb38e"
 
 RESOURCES = [
     {
         "name": "ongoing_waits_long_trend",
         "resource_id": "5816ec92-66bf-4033-ae55-9df45ff19d49",
-        "description": "Ongoing inpatient, daycase and outpatient waits — long historical trend"
+        "description": "Ongoing inpatient, daycase and outpatient waits - long historical trend"
     },
     {
         "name": "completed_waits_long_trend",
         "resource_id": "4c091d26-1492-41e5-9577-832cbc1cd4cf",
-        "description": "Completed inpatient, daycase and outpatient waits — long historical trend"
+        "description": "Completed inpatient, daycase and outpatient waits - long historical trend"
     },
     {
         "name": "ongoing_waits_monthly",
         "resource_id": "ac63b747-fdcc-410c-ae43-de6fe3c46abf",
-        "description": "Ongoing and completed waits — most recent 25 months (monthly)"
+        "description": "Ongoing and completed waits - most recent 25 months (monthly)"
     },
     {
         "name": "distribution_ongoing_waits_long_trend",
         "resource_id": "093f04a5-bb8f-4ce6-9016-d4fa0a912630",
-        "description": "Distribution of ongoing wait lengths — long trend"
+        "description": "Distribution of ongoing wait lengths - long trend"
     },
     {
         "name": "additions_and_removals",
@@ -50,7 +37,7 @@ RESOURCES = [
     },
 ]
 
-# ── Download a single resource as CSV ────────────────────────────────────────
+# Download a single resource as CSV
 
 def download_resource(resource: dict) -> pd.DataFrame:
     """
@@ -84,7 +71,7 @@ def download_resource(resource: dict) -> pd.DataFrame:
             data = response.json()
 
             if not data.get("success"):
-                print(f"  [WARN] API returned success=false, trying direct CSV...")
+                print(f"  [WARN] API returned success=false, trying direct CSV")
                 break
 
             records = data["result"]["records"]
@@ -95,14 +82,14 @@ def download_resource(resource: dict) -> pd.DataFrame:
             print(f"  Fetched {len(all_records):,} / {total:,} rows", end="\r")
 
             if offset >= total:
-                print(f"\n  Done — {len(all_records):,} rows")
+                print(f"\n  Done - {len(all_records):,} rows")
                 return pd.DataFrame(all_records)
 
         except Exception as e:
             print(f"  [WARN] API error: {e}, trying direct CSV...")
             break
 
-    # Method 2: Fallback — direct CSV download
+    # Method 2: Fallback - direct CSV download
     print("  Attempting direct CSV download...")
     csv_url = (
         f"https://www.opendata.nhs.scot/dataset/{PACKAGE_UUID}"
@@ -114,7 +101,7 @@ def download_resource(resource: dict) -> pd.DataFrame:
         if response.status_code == 200:
             from io import StringIO
             df = pd.read_csv(StringIO(response.text))
-            print(f"  Done — {len(df):,} rows via direct CSV")
+            print(f"  Done - {len(df):,} rows via direct CSV")
             return df
         else:
             print(f"  [ERROR] Direct CSV returned {response.status_code}")
@@ -123,13 +110,11 @@ def download_resource(resource: dict) -> pd.DataFrame:
         print(f"  [ERROR] Direct CSV failed: {e}")
         return pd.DataFrame()
 
-
-# ── Main ─────────────────────────────────────────────────────────────────────
-
+# Main
 def fetch_all_data():
     os.makedirs(RAW_DATA_DIR, exist_ok=True)
 
-    print("\n── NHS Scotland Waiting Times — Phase 1 Data Download ─────────────")
+    print("\n NHS Scotland Waiting Times - Phase 1 Data Download")
     print(f"Package: stage-of-treatment-waiting-times")
     print(f"UUID:    {PACKAGE_UUID}")
     print(f"Output:  {RAW_DATA_DIR}/\n")
@@ -160,12 +145,12 @@ def fetch_all_data():
         print(f"  Columns: {list(df.columns)}")
 
     # Summary table
-    print("\n── Download Summary ────────────────────────────────────────────────")
+    print("\n Download Summary")
     for s in summary:
         status_icon = "✓" if s["status"] == "downloaded" else ("↷" if s["status"] == "skipped" else "✗")
         print(f"  {status_icon}  {s['file']:<45} {s['rows']:>8,} rows  [{s['status']}]")
 
-    print("\n── Phase 1 Complete ────────────────────────────────────────────────")
+    print("\n Phase 1 Complete")
     print("Next: run src/clean_data.py (Phase 2)\n")
 
 
