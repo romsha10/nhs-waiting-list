@@ -1,5 +1,4 @@
 # PURPOSE: Clean and structure raw NHS Scotland waiting times data
-#
 # KEY FIX: ongoing_waits_long_trend uses 'MonthEnding' (not 'MonthEnd') and already has 'NumberWaitingOver12Weeks' pre-calculated.
 
 import pandas as pd
@@ -213,9 +212,14 @@ def clean_all():
     print(f"  (Data as of {latest_date.date()})\n")
     for _, row in top10.iterrows():
         bar = "█" * int(row["PctOver12Weeks"] / 5)
-        flag = "🔴" if row["PctOver12Weeks"] > 50 else ("🟡" if row["PctOver12Weeks"] > 20 else "🟢")
-        print(f"  {flag} {row['PctOver12Weeks']:5.1f}%  {bar}")
-        print(f"          {row['HealthBoardName']} | {row['SpecialtyName']} | {row['PatientType']}\n")
+        if row["PctOver12Weeks"] > 50:
+            flag = "[RED]  "
+        elif row["PctOver12Weeks"] > 20:
+            flag = "[AMBER]"
+        else:
+            flag = "[GREEN]"
+        print(f"  {flag}  {row['PctOver12Weeks']:5.1f}%  {bar}")
+        print(f"           {row['HealthBoardName']} | {row['SpecialtyName']} | {row['PatientType']}\n")
 
     print("Phase 2 Complete")
 
