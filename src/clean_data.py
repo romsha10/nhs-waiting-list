@@ -1,15 +1,6 @@
-# src/clean_data.py
-# ─────────────────────────────────────────────────────────────────────────────
 # PURPOSE: Clean and structure raw NHS Scotland waiting times data
 #
-# KEY FIX: ongoing_waits_long_trend uses 'MonthEnding' (not 'MonthEnd')
-#          and already has 'NumberWaitingOver12Weeks' pre-calculated.
-#          We use that directly — no need to sum wait bands manually.
-#
-# FINAL COLUMNS WE CARE ABOUT:
-#   Date, HBT, HealthBoardName, PatientType, Specialty, SpecialtyName,
-#   NumberWaiting, NumberWaitingOver12Weeks, PctOver12Weeks
-# ─────────────────────────────────────────────────────────────────────────────
+# KEY FIX: ongoing_waits_long_trend uses 'MonthEnding' (not 'MonthEnd') and already has 'NumberWaitingOver12Weeks' pre-calculated.
 
 import pandas as pd
 import os
@@ -17,7 +8,7 @@ import os
 RAW_DIR = "data/raw"
 PROCESSED_DIR = "data/processed"
 
-# ── Health Board code → name mapping ─────────────────────────────────────────
+# Health Board Code - Name mapping
 HB_NAMES = {
     "S92000003": "NHS Scotland (All)",
     "S08000015": "NHS Ayrshire & Arran",
@@ -37,7 +28,7 @@ HB_NAMES = {
     "S27000001": "NHS Golden Jubilee",
 }
 
-# ── Specialty code → name mapping ─────────────────────────────────────────────
+# Specialty code - name mapping
 SPECIALTY_NAMES = {
     "Z9":  "All Specialties",
     "A1":  "General Surgery",
@@ -69,7 +60,7 @@ SPECIALTY_NAMES = {
     "T2":  "Restorative Dentistry",
 }
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# Helpers
 
 def drop_qf_columns(df):
     qf_cols = [c for c in df.columns if c.endswith("QF")]
@@ -88,7 +79,7 @@ def map_codes(df):
         )
     return df
 
-# ── Clean: ongoing_waits_long_trend ──────────────────────────────────────────
+# Clean: ongoing_waits_long_trend
 
 def clean_ongoing_waits():
     """
@@ -130,7 +121,7 @@ def clean_ongoing_waits():
 
     return df
 
-# ── Clean: ongoing_waits_monthly ─────────────────────────────────────────────
+# Clean: ongoing_waits_monthly
 
 def clean_monthly_waits():
     """
@@ -158,7 +149,7 @@ def clean_monthly_waits():
 
     return df
 
-# ── Clean: additions_and_removals ────────────────────────────────────────────
+# Clean: additions_and_removals
 
 def clean_additions_removals():
     """
@@ -182,12 +173,12 @@ def clean_additions_removals():
 
     return df
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+# Main
 
 def clean_all():
     os.makedirs(PROCESSED_DIR, exist_ok=True)
 
-    print("\n── Phase 2: Cleaning NHS Waiting Times Data ────────────────────────\n")
+    print("\n Phase 2: Cleaning NHS Waiting Times Data \n")
 
     df_ongoing   = clean_ongoing_waits()
     df_monthly   = clean_monthly_waits()
@@ -198,13 +189,13 @@ def clean_all():
     df_monthly.to_csv(f"{PROCESSED_DIR}/monthly_waits_clean.csv", index=False)
     df_additions.to_csv(f"{PROCESSED_DIR}/additions_removals_clean.csv", index=False)
 
-    print("\n── Saved ───────────────────────────────────────────────────────────")
-    print(f"  ✓ processed/ongoing_waits_clean.csv     ({len(df_ongoing):,} rows)")
-    print(f"  ✓ processed/monthly_waits_clean.csv     ({len(df_monthly):,} rows)")
-    print(f"  ✓ processed/additions_removals_clean.csv ({len(df_additions):,} rows)")
+    print("\n Saved")
+    print(f"processed/ongoing_waits_clean.csv ({len(df_ongoing):,} rows)")
+    print(f"processed/monthly_waits_clean.csv ({len(df_monthly):,} rows)")
+    print(f"processed/additions_removals_clean.csv ({len(df_additions):,} rows)")
 
-    # ── Sanity check: top 10 breach combinations right now ───────────────────
-    print("\n── Current Worst Breach % (latest month, by Health Board & Specialty)")
+    # Sanity check: top 10 breach combinations right now
+    print("\n Current Worst Breach % (latest month, by Health Board & Specialty)")
     latest_date = df_ongoing["Date"].max()
     latest = df_ongoing[
         (df_ongoing["Date"] == latest_date) &
@@ -226,11 +217,9 @@ def clean_all():
         print(f"  {flag} {row['PctOver12Weeks']:5.1f}%  {bar}")
         print(f"          {row['HealthBoardName']} | {row['SpecialtyName']} | {row['PatientType']}\n")
 
-    print("── Phase 2 Complete ─────────────────────────────────────────────────")
-    print("Next: run src/forecast.py (Phase 3)\n")
+    print("Phase 2 Complete")
 
     return df_ongoing, df_monthly, df_additions
-
 
 if __name__ == "__main__":
     clean_all()
