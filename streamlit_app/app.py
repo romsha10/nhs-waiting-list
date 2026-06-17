@@ -1,14 +1,11 @@
-# streamlit_app/app.py
-# -----------------------------------------------------------------------------
 # PURPOSE: Interactive public dashboard for NHS Scotland waiting time risk
-#          Built with Streamlit — runs locally and deploys free on Streamlit Cloud
+#          Built with Streamlit - runs locally and deploys free on Streamlit Cloud
 #
 # PAGES:
-#   1. National Overview   — traffic light summary across all boards
-#   2. Health Board Drill  — pick a board, see all its specialties
-#   3. Specialty Deep Dive — full forecast chart for one department
-#   4. About               — methodology and data sources
-# -----------------------------------------------------------------------------
+#   1. National Overview   - traffic light summary across all boards
+#   2. Health Board Drill  - pick a board, see all its specialties
+#   3. Specialty Deep Dive - full forecast chart for one department
+#   4. About               - methodology and data sources
 
 import streamlit as st
 import pandas as pd
@@ -19,9 +16,7 @@ from plotly.subplots import make_subplots
 import os
 import sys
 
-# -----------------------------------------------------------------------------
-# Page config — must be first Streamlit call
-# -----------------------------------------------------------------------------
+# Page config - must be first Streamlit call
 
 st.set_page_config(
     page_title="NHS Scotland Waiting Times Risk Dashboard",
@@ -30,17 +25,11 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# -----------------------------------------------------------------------------
-# Paths — work whether run from repo root or streamlit_app/
-# -----------------------------------------------------------------------------
-
+# Paths - work whether run from repo root or streamlit_app/
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROCESSED = os.path.join(ROOT, "data", "processed")
 
-# -----------------------------------------------------------------------------
-# Load data — cached so it only reads CSV once per session
-# -----------------------------------------------------------------------------
-
+# Load data - cached so it only reads CSV once per session
 @st.cache_data
 def load_risk():
     return pd.read_csv(os.path.join(PROCESSED, "risk_scores.csv"))
@@ -55,10 +44,7 @@ def load_forecasts():
     df = pd.read_csv(os.path.join(PROCESSED, "forecasts.csv"), parse_dates=["ForecastDate"])
     return df
 
-# -----------------------------------------------------------------------------
 # Colour helpers
-# -----------------------------------------------------------------------------
-
 COLOURS = {
     "RED":   "#E63946",
     "AMBER": "#F4A261",
@@ -70,10 +56,7 @@ def rag_badge(rating: str) -> str:
     colour = COLOURS.get(rating, "#888")
     return f'<span style="background:{colour};color:white;padding:2px 10px;border-radius:4px;font-weight:bold">{rating}</span>'
 
-# -----------------------------------------------------------------------------
 # Sidebar navigation
-# -----------------------------------------------------------------------------
-
 st.sidebar.title("NHS Scotland")
 st.sidebar.caption("Waiting Times Risk Dashboard")
 st.sidebar.markdown("---")
@@ -91,31 +74,25 @@ st.sidebar.caption(
     "Model: Facebook Prophet"
 )
 
-# -----------------------------------------------------------------------------
 # Load all data upfront
-# -----------------------------------------------------------------------------
-
-risk      = load_risk()
+risk = load_risk()
 ongoing   = load_ongoing()
 forecasts = load_forecasts()
 
 latest_data_date = ongoing["Date"].max()
-forecast_end     = forecasts["ForecastDate"].max()
+forecast_end = forecasts["ForecastDate"].max()
 
-# -----------------------------------------------------------------------------
-# PAGE 1 — National Overview
-# -----------------------------------------------------------------------------
-
+# PAGE 1 - National Overview
 if page == "National Overview":
 
-    st.title("NHS Scotland — Waiting Times Risk Dashboard")
+    st.title("NHS Scotland - Waiting Times Risk Dashboard")
     st.caption(
         f"Actual data to {latest_data_date.strftime('%B %Y')}  |  "
         f"Forecast to {pd.to_datetime(forecast_end).strftime('%B %Y')}  |  "
         f"12-week Treatment Time Guarantee (TTG) monitoring"
     )
 
-    # -- KPI row --------------------------------------------------------------
+    # KPI row
     total = len(risk)
     n_red   = (risk["RiskRating"] == "RED").sum()
     n_amber = (risk["RiskRating"] == "AMBER").sum()
@@ -123,13 +100,13 @@ if page == "National Overview":
 
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total Departments Monitored", f"{total:,}")
-    c2.metric("RED — Breach Predicted",  f"{n_red}",   delta=None)
-    c3.metric("AMBER — At Risk",         f"{n_amber}", delta=None)
-    c4.metric("GREEN — On Target",       f"{n_green}", delta=None)
+    c2.metric("RED - Breach Predicted",  f"{n_red}",   delta=None)
+    c3.metric("AMBER - At Risk",         f"{n_amber}", delta=None)
+    c4.metric("GREEN - On Target",       f"{n_green}", delta=None)
 
     st.markdown("---")
 
-    # -- RAG donut chart + bar chart side by side -----------------------------
+    # RAG donut chart + bar chart side by side
     col_left, col_right = st.columns([1, 2])
 
     with col_left:
@@ -172,8 +149,8 @@ if page == "National Overview":
 
     st.markdown("---")
 
-    # -- Highest priority departments table -----------------------------------
-    st.subheader("Highest Priority Departments — Action Required")
+    # Highest priority departments table
+    st.subheader("Highest Priority Departments - Action Required")
     st.caption("Sorted by Priority Score (RED + worsening trend ranked highest)")
 
     top_risk = risk[risk["RiskRating"] == "RED"].sort_values(
@@ -204,9 +181,9 @@ if page == "National Overview":
         }
     )
 
-    # -- National trend chart -------------------------------------------------
+    # National trend chart
     st.markdown("---")
-    st.subheader("NHS Scotland — National Breach Trend")
+    st.subheader("NHS Scotland - National Breach Trend")
     st.caption("All specialties combined (Z9), both patient types")
 
     national = ongoing[
@@ -262,10 +239,7 @@ if page == "National Overview":
         )
         st.plotly_chart(fig_nat, use_container_width=True)
 
-# -----------------------------------------------------------------------------
-# PAGE 2 — Health Board Drill-Down
-# -----------------------------------------------------------------------------
-
+# PAGE 2 - Health Board Drill-Down
 elif page == "Health Board Drill-Down":
 
     st.title("Health Board Drill-Down")
@@ -301,7 +275,7 @@ elif page == "Health Board Drill-Down":
         board_data = board_data[board_data["PatientType"] == pt_filter]
 
     # Specialty risk table
-    st.subheader(f"All Specialties — {selected_board}")
+    st.subheader(f"All Specialties - {selected_board}")
 
     display = board_data[[
         "SpecialtyName", "PatientType", "RiskRating",
@@ -349,13 +323,10 @@ elif page == "Health Board Drill-Down":
     )
     st.plotly_chart(fig_hbar, use_container_width=True)
 
-# -----------------------------------------------------------------------------
-# PAGE 3 — Specialty Deep Dive
-# -----------------------------------------------------------------------------
-
+# PAGE 3 - Specialty Deep Dive
 elif page == "Specialty Deep Dive":
 
-    st.title("Specialty Deep Dive — Forecast Chart")
+    st.title("Specialty Deep Dive - Forecast Chart")
     st.caption("Full historical trend + 6-month Prophet forecast with confidence intervals")
 
     col1, col2, col3 = st.columns(3)
@@ -467,7 +438,7 @@ elif page == "Specialty Deep Dive":
         )
 
     fig.update_layout(
-        title=f"{selected_board} — {selected_spec} ({selected_pt})",
+        title=f"{selected_board} - {selected_spec} ({selected_pt})",
         xaxis_title="Date",
         yaxis_title="% Waiting Over 12 Weeks",
         yaxis=dict(range=[0, 105]),
@@ -490,10 +461,7 @@ elif page == "Specialty Deep Dive":
     ]
     st.dataframe(recent_table, use_container_width=True, hide_index=True)
 
-# -----------------------------------------------------------------------------
-# PAGE 4 — About
-# -----------------------------------------------------------------------------
-
+# PAGE 4 - About
 elif page == "About":
 
     st.title("About This Dashboard")
@@ -503,7 +471,7 @@ elif page == "About":
 
     This dashboard monitors NHS Scotland waiting times and predicts which
     departments are at risk of breaching the 12-week Treatment Time Guarantee (TTG)
-    before the breach occurs — giving managers time to act.
+    before the breach occurs - giving managers time to act.
 
     ## Data Source
 
@@ -513,27 +481,27 @@ elif page == "About":
 
     ## Methodology
 
-    **Step 1 — Data Pipeline**
+    **Step 1 - Data Pipeline**
     Raw waiting time counts are downloaded via the NHS Scotland CKAN API,
     cleaned with Pandas, and structured by Health Board, Specialty, and Patient Type.
 
-    **Step 2 — Forecasting**
+    **Step 2 - Forecasting**
     A separate Facebook Prophet model is fitted for each department combination
     (Health Board x Specialty x Patient Type). Prophet decomposes the time series
     into trend + yearly seasonality, then extrapolates 6 months forward with
     80% confidence intervals.
 
-    **Step 3 — Traffic Light Classification**
+    **Step 3 - Traffic Light Classification**
     Each department receives a RAG rating based on its peak forecasted breach
     percentage over the next 6 months:
 
     | Rating | Threshold | Meaning |
     |--------|-----------|---------|
     | GREEN  | < 20%     | Comfortably within TTG target |
-    | AMBER  | 20 - 50%  | At risk — monitoring recommended |
-    | RED    | > 50%     | Breach predicted — action required |
+    | AMBER  | 20 - 50%  | At risk - monitoring recommended |
+    | RED    | > 50%     | Breach predicted - action required |
 
-    **Step 4 — Priority Score**
+    **Step 4 - Priority Score**
     A composite score combining RAG rating and trend direction ranks departments
     by urgency. RED + worsening trend = highest priority.
 
@@ -543,7 +511,7 @@ elif page == "About":
       volumes, so percentage metrics are more volatile and less reliable.
     - Forecasts assume historical patterns continue. Major policy changes or
       events (e.g. COVID) will reduce accuracy.
-    - This tool is for monitoring and early warning only — not for clinical decisions.
+    - This tool is for monitoring and early warning only - not for clinical decisions.
 
     ## Built With
 
