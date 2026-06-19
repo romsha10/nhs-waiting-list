@@ -66,8 +66,8 @@ nhs-waiting-list/
 | Risk Rating | Departments | Percentage |
 |---|---|---|
 | RED — Breach Predicted | 515 | 56.2% |
-| AMBER — At Risk | 247 | 27.0% |
-| GREEN — On Target | 154 | 16.8% |
+| AMBER - At Risk | 247 | 27.0% |
+| GREEN - On Target | 154 | 16.8% |
 
 Over 56% of monitored NHS Scotland departments are forecast to breach
 the 12-week Treatment Time Guarantee within the next 6 months.
@@ -84,7 +84,7 @@ the CKAN API. No scraping. Official government data, updated monthly.
 ### Phase 2 — Cleaning
 Pandas pipeline parses NHS date formats, drops quality flag columns,
 maps health board and specialty codes to human-readable names, and
-calculates the core breach metric — percentage of patients waiting
+calculates the core breach metric - percentage of patients waiting
 over 12 weeks per department.
 
 ### Phase 3 — Forecasting
@@ -100,10 +100,10 @@ percentage. A Priority Score combines RAG rating with trend direction
 
 ### Phase 5 — Streamlit App
 Four-page interactive dashboard built with Streamlit and Plotly:
-- National Overview — KPIs, donut chart, priority table
-- Health Board Drill-Down — specialty breakdown per board
-- Specialty Deep Dive — full forecast chart with confidence intervals
-- About — methodology and data sources
+- National Overview - KPIs, donut chart, priority table
+- Health Board Drill-Down - specialty breakdown per board
+- Specialty Deep Dive - full forecast chart with confidence intervals
+- About - methodology and data sources
 
 ### Phase 6 — Power BI
 Three-page executive dashboard for NHS managers:
@@ -118,7 +118,7 @@ Three-page executive dashboard for NHS managers:
 | Rating | Threshold | Meaning |
 |---|---|---|
 | GREEN | Below 20% | Comfortably within TTG target |
-| AMBER | 20% to 50% | At risk — monitoring recommended |
+| AMBER | 20% to 50% | At risk - monitoring recommended |
 | RED | Above 50% | Breach predicted - action required |
 
 Ratings based on PEAK forecasted breach percentage over next 6 months.
@@ -153,7 +153,7 @@ python -m venv venv
 # Activate — Windows
 venv\Scripts\activate
 
-# Activate — Mac/Linux
+# Activate - Mac/Linux
 source venv/bin/activate
 
 # Install dependencies
