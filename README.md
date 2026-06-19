@@ -15,6 +15,7 @@ findings through an interactive Streamlit dashboard and Power BI report.
 ---
 
 ## Project Structure
+```text
 nhs-waiting-list/
 ├── data/
 │   ├── raw/
