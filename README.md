@@ -107,9 +107,9 @@ Four-page interactive dashboard built with Streamlit and Plotly:
 
 ### Phase 6 — Power BI
 Three-page executive dashboard for NHS managers:
-- Executive Summary — national RAG overview
-- Health Board Drill-Down — slicers for board and specialty
-- Forecast View — 6-month forecast with threshold lines
+- Executive Summary - national RAG overview
+- Health Board Drill-Down - slicers for board and specialty
+- Forecast View - 6-month forecast with threshold lines
 
 ---
 
@@ -119,10 +119,10 @@ Three-page executive dashboard for NHS managers:
 |---|---|---|
 | GREEN | Below 20% | Comfortably within TTG target |
 | AMBER | 20% to 50% | At risk — monitoring recommended |
-| RED | Above 50% | Breach predicted — action required |
+| RED | Above 50% | Breach predicted - action required |
 
 Ratings based on PEAK forecasted breach percentage over next 6 months.
-Priority Score adds trend direction — RED plus worsening trend = highest urgency.
+Priority Score adds trend direction - RED plus worsening trend = highest urgency.
 
 ---
 
