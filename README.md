@@ -76,36 +76,36 @@ the 12-week Treatment Time Guarantee within the next 6 months.
 
 ## How It Works
 
-### Phase 1 — Data
+### Phase 1 - Data
 Pulls live data from NHS Scotland Open Data (opendata.nhs.scot) via
 the CKAN API. No scraping. Official government data, updated monthly.
 330,000+ rows covering October 2012 to present.
 
-### Phase 2 — Cleaning
+### Phase 2 - Cleaning
 Pandas pipeline parses NHS date formats, drops quality flag columns,
 maps health board and specialty codes to human-readable names, and
 calculates the core breach metric - percentage of patients waiting
 over 12 weeks per department.
 
-### Phase 3 — Forecasting
+### Phase 3 - Forecasting
 A separate Facebook Prophet model is fitted for each Health Board,
 Specialty and Patient Type combination (916 models total). Prophet
 learns long-term trend and yearly seasonality from 13 years of data
 and projects 6 months forward with 80% confidence intervals.
 
-### Phase 4 — Risk Engine
+### Phase 4 - Risk Engine
 Each department receives a RAG rating based on peak forecasted breach
 percentage. A Priority Score combines RAG rating with trend direction
 (linear slope over last 6 months) to rank departments by urgency.
 
-### Phase 5 — Streamlit App
+### Phase 5 - Streamlit App
 Four-page interactive dashboard built with Streamlit and Plotly:
 - National Overview - KPIs, donut chart, priority table
 - Health Board Drill-Down - specialty breakdown per board
 - Specialty Deep Dive - full forecast chart with confidence intervals
 - About - methodology and data sources
 
-### Phase 6 — Power BI
+### Phase 6 - Power BI
 Three-page executive dashboard for NHS managers:
 - Executive Summary - national RAG overview
 - Health Board Drill-Down - slicers for board and specialty
@@ -185,7 +185,7 @@ Updated: Monthly
 
 - Small Health Boards (Orkney, Shetland, Western Isles) have low patient
   volumes so percentage metrics are more volatile and less reliable
-- Forecasts assume historical patterns continue — major policy changes
+- Forecasts assume historical patterns continue - major policy changes
   or events such as COVID will reduce accuracy
 - This tool is for monitoring and early warning only, not clinical decisions
 
