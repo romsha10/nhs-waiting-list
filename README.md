@@ -45,7 +45,7 @@ nhs-waiting-list/
 
 | Risk Rating | Departments | Percentage |
 |---|---|---|
-| RED — Breach Predicted | 515 | 56.2% |
+| RED - Breach Predicted | 515 | 56.2% |
 | AMBER - At Risk | 247 | 27.0% |
 | GREEN - On Target | 154 | 16.8% |
 
