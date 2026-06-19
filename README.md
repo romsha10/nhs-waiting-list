@@ -16,49 +16,27 @@ findings through an interactive Streamlit dashboard and Power BI report.
 
 ## Project Structure
 nhs-waiting-list/
-
 ├── data/
-
-│   ├── raw/                          # Downloaded from NHS Scotland API
-
-│   └── processed/                    # Cleaned and modelled outputs
-
+│   ├── raw/                           # Downloaded from NHS Scotland API
+│   └── processed/                     # Cleaned and modelled outputs
 │       ├── ongoing_waits_clean.csv
-
 │       ├── monthly_waits_clean.csv
-
 │       ├── additions_removals_clean.csv
-
 │       ├── forecasts.csv
-
 │       └── risk_scores.csv
-
 ├── src/
-
-│   ├── fetch_data.py                 # Phase 1 — NHS API download
-
-│   ├── clean_data.py                 # Phase 2 — Pandas cleaning pipeline
-
-│   ├── forecast.py                   # Phase 3 — Prophet forecasting
-
-│   └── risk_engine.py               # Phase 4 — Traffic light risk scoring
-
+│   ├── fetch_data.py                  # Phase 1 — NHS API download
+│   ├── clean_data.py                  # Phase 2 — Pandas cleaning pipeline
+│   ├── forecast.py                    # Phase 3 — Prophet forecasting
+│   └── risk_engine.py                 # Phase 4 — Traffic light risk scoring
 ├── streamlit_app/
-
-│   └── app.py                        # Phase 5 — Interactive dashboard
-
+│   └── app.py                         # Phase 5 — Interactive dashboard
 ├── powerbi/
-
-│   └── nhs_dashboard.pbix            # Phase 6 — Power BI report
-
+│   └── nhs_dashboard.pbix             # Phase 6 — Power BI report
 ├── outputs/
-
-│   └── executive_brief.md            # Phase 7 — Board executive brief
-
+│   └── executive_brief.md             # Phase 7 — Board executive brief
 ├── requirements.txt
-
 └── README.md
-
 ---
 
 ## Key Findings
