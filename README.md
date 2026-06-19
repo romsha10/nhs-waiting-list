@@ -38,6 +38,7 @@ nhs-waiting-list/
 │   └── executive_brief.md
 ├── requirements.txt
 └── README.md
+```
 ---
 
 ## Key Findings
